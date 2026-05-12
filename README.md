@@ -174,13 +174,55 @@ The build status badge at the top of this README updates automatically.
 
 ## 📈 Future Improvements
 
-- [ ] Add API-level setup (seed cart state via API instead of UI)
+- [done ] Add API-level setup (seed cart state via API instead of UI)
 - [ ] Visual regression testing using Playwright's snapshot assertions
 - [ ] Allure reporting integration
 - [ ] Docker container for fully reproducible local runs
 - [ ] Environment-specific configs (staging vs prod baseURL)
 
 ---
+
+## ⚡ Performance — Auth State Reuse
+
+Logging in via the UI for every test is slow and unrepresentative of real
+user sessions. To address this, the framework uses Playwright's `globalSetup`
+to log in once per user role at the start of the run, save the resulting
+browser state (cookies + localStorage) to disk, and reuse that state across
+tests via custom fixtures.
+
+### Measured impact
+
+Cart test suite, Chromium only, 4 tests running in parallel:
+
+| Approach                                  | Time    |
+|-------------------------------------------|---------|
+| UI login per test (original)              | 11.2 s  |
+| Auth state via `globalSetup` + fixtures   |  6.6 s  |
+| **Reduction**                             | **~41%** |
+
+The per-test gain is modest because tests run in parallel and login overhead
+overlaps across workers. The pattern's real value is **scaling** — adding
+10 more cart tests would add ~30s to the original approach and near-zero
+to the auth-state approach. The bigger the suite, the bigger the win.
+
+### How it works
+
+1. `global-setup.js` — runs once before any test. Logs in as each user role
+   (standard, problem) and writes `.auth/<role>.json` containing the
+   resulting storage state.
+2. `fixtures/auth-fixtures.js` — exposes `standardUserPage` and
+   `problemUserPage` fixtures. Each fixture creates a new browser context
+   pre-loaded with the saved auth state.
+3. Tests opt in by destructuring the fixture they need:
+```js
+   test('cart works', async ({ inventoryPage }) => {
+     // page is already logged in as standard_user, on /inventory
+   });
+```
+
+The `.auth/` directory is gitignored — those files contain real session
+cookies and must never be committed.
+
 
 ## 👤 Author
 
