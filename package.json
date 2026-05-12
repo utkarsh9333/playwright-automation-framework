@@ -1,0 +1,32 @@
+{
+  "name": "playwright-automation-framework",
+  "version": "1.0.0",
+  "description": "End-to-end test automation framework using Playwright and JavaScript, demonstrating Page Object Model, data-driven testing, and CI integration.",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:webkit": "playwright test --project=webkit",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:debug": "playwright test --debug",
+    "report": "playwright show-report",
+    "codegen": "playwright codegen https://www.saucedemo.com"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "qa",
+    "e2e",
+    "page-object-model"
+  ],
+  "author": "Utkarsh Gupta",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.47.0",
+    "@types/node": "^22.5.0"
+  }
+}
